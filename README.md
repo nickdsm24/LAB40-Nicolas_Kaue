@@ -1,10 +1,11 @@
-# LAB40 – Laboratório de Funcionalidades Web
+# LAB40 – Laboratório de Funcionalidades Web (Enunciado 18)
 
-Projeto-base para avaliação prática de Integração e Entrega Contínua (CI/CD).
+Projeto-base para avaliação prática de Integração e Entrega Contínua (CI/CD), com implementação do **Enunciado 18 – Identificador de maior valor** (`src/features/feature18.js`).
 
 ## Requisitos
 - Node.js 20 ou superior.
 - npm.
+- Docker (opcional para execução em container).
 
 ## Executar localmente
 ```bash
@@ -18,36 +19,66 @@ Acesse http://localhost:3000. Para desenvolvimento com reinicialização automá
 - `GET /api/features`: lista as 40 funcionalidades e seus estados.
 - `POST /api/features/:id`: executa uma funcionalidade, recebendo JSON no corpo.
 
-Exemplo:
+Exemplo para a **Feature 18 (Identificador de maior valor)**:
 ```bash
-curl -X POST http://localhost:3000/api/features/1 -H "Content-Type: application/json" -d '{"valor":200,"percentual":15}'
+curl -X POST http://localhost:3000/api/features/18 -H "Content-Type: application/json" -d '{"valores":[8,2,5]}'
+```
+Saída esperada:
+```json
+{"id":18,"name":"Identificador de maior valor","result":{"maior":8}}
+```
+
+## Testes Automatizados, Lint, Smoke Test e Auditoria
+- **Testes unitários (`node:test`)**:
+  ```bash
+  npm test
+  # ou com saída detalhada:
+  npm run test:spec
+  ```
+- **Análise estática (ESLint)**:
+  ```bash
+  npm run lint
+  ```
+- **Smoke test da API**:
+  ```bash
+  npm run test:smoke
+  ```
+- **Auditoria de dependências**:
+  ```bash
+  npm audit --audit-level=high
+  ```
+  Resultado observado: `found 0 vulnerabilities` (apenas `eslint` como dependência de desenvolvimento).
+
+## Roteiro de Testes Manuais (Feature 18)
+1. Inicie a aplicação com `npm start` e confirme em `http://localhost:3000/health` que o retorno é `{"status":"ok","application":"LAB40"}`.
+2. Acesse `http://localhost:3000/` no navegador e localize o cartão **18 – Identificador de maior valor**.
+3. Informe o JSON de referência `{"valores":[8,2,5]}` e execute; confirme que a resposta apresenta `maior: 8`.
+4. Teste um caso de fronteira com números negativos e decimais, como `{"valores":[-8,-2,-5.5]}`, confirmando `maior: -2`.
+5. Teste uma entrada inválida, como `{"valores":[]}` ou `{"valores":[1,"2"]}`, confirmando que a API retorna HTTP 400 com mensagem de erro clara sem derrubar o servidor.
+
+## Docker
+```bash
+docker build --pull -t lab40:feature18 .
+docker run -d --name lab40-container -p 3000:3000 lab40:feature18
+curl --fail http://localhost:3000/health
+curl --fail -X POST http://localhost:3000/api/features/18 -H "Content-Type: application/json" -d '{"valores":[8,2,5]}'
+docker stop lab40-container && docker rm lab40-container
 ```
 
 ## Estrutura
 ```text
 lab40/
+├── .github/workflows/ci.yml
 ├── public/
+├── scripts/smoke.js
 ├── src/
 │   ├── app.js
 │   ├── server.js
-│   └── features/
+│   └── features/feature18.js
+├── test/feature18.test.js
+├── Dockerfile
+├── .dockerignore
+├── eslint.config.js
 ├── package.json
 └── package-lock.json
 ```
-
-## Contrato de cada módulo
-Cada arquivo `src/features/featureNN.js` exporta `id`, `name`, `description`, `implemented` e `execute(input)`.
-
-1. Implemente `execute(input)`.
-2. Valide os dados recebidos.
-3. Retorne um objeto serializável em JSON.
-4. Trate entradas inválidas lançando `Error` com mensagem clara.
-5. Depois de implementar e validar, altere `implemented` para `true`.
-6. Não altere o contrato dos outros módulos nem a API central sem autorização.
-
-Enquanto `implemented` for `false`, a API retorna HTTP 501 para aquele módulo.
-
-## Importante
-Este repositório é entregue intencionalmente sem testes automatizados, análise estática, workflow de CI, build ou configuração de deploy. O estudante deverá criar e justificar esses elementos durante a avaliação.
-
-O servidor escuta `process.env.PORT` e `0.0.0.0`, e a aplicação não persiste dados em disco.
