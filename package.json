@@ -6,9 +6,16 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "node --watch src/server.js"
+    "dev": "node --watch src/server.js",
+    "test": "node --test",
+    "test:spec": "node --test --test-reporter=spec",
+    "lint": "eslint .",
+    "test:smoke": "node scripts/smoke.js"
   },
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "eslint": "^10.16.0"
   }
 }
