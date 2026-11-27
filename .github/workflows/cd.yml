@@ -1,0 +1,42 @@
+name: CD Simulado - LAB40 (Feature 18)
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  cd-simulado:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Construir imagem Docker de entrega
+        run: docker build --pull -t lab40:feature18 -t lab40:${{ github.sha }} .
+
+      - name: Exportar imagem Docker (.tar)
+        run: docker save lab40:feature18 -o lab40-feature18.tar
+
+      - name: Gerar registro de entrega (deployment-record.txt)
+        run: |
+          {
+            echo "LAB40 - Registro de Entrega Simulada (CD)"
+            echo "Repositorio: ${{ github.repository }}"
+            echo "Referencia: ${{ github.ref }}"
+            echo "Commit SHA: ${{ github.sha }}"
+            echo "Tag da Imagem: lab40:feature18"
+            echo "Arquivo Exportado: lab40-feature18.tar"
+            echo "Workflow Run ID: ${{ github.run_id }}"
+            echo "Data/Hora (UTC): $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          } > deployment-record.txt
+          cat deployment-record.txt
+
+      - name: Publicar artefato lab40-delivery-record
+        uses: actions/upload-artifact@v4
+        with:
+          name: lab40-delivery-record
+          path: |
+            lab40-feature18.tar
+            deployment-record.txt
